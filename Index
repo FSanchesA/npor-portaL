@@ -1,0 +1,606 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#162C87">
+  <title>NPOR | Central de Aplicativos</title>
+
+  <style>
+    :root {
+      --azul: #162C87;
+      --azul-claro: #2097D6;
+      --verde: #009B59;
+      --amarelo: #DFAD43;
+      --vermelho: #E33236;
+      --fundo: #F5F7FB;
+      --texto: #192743;
+      --cinza: #728097;
+      --borda: #E5EAF2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--fundo);
+      color: var(--texto);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .barra-cores {
+      height: 6px;
+      background: linear-gradient(
+        90deg,
+        var(--verde) 0%,
+        var(--verde) 27%,
+        var(--amarelo) 27%,
+        var(--amarelo) 48%,
+        var(--azul) 48%,
+        var(--azul) 79%,
+        var(--vermelho) 79%
+      );
+    }
+
+    header {
+      background: white;
+      border-bottom: 1px solid var(--borda);
+    }
+
+    .header-interno {
+      max-width: 1150px;
+      margin: auto;
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .marca {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .brasao {
+      width: 69px;
+      height: 77px;
+      object-fit: contain;
+    }
+
+    .marca h1 {
+      margin: 0;
+      color: var(--azul);
+      font-size: 29px;
+      font-weight: 850;
+      letter-spacing: 3px;
+    }
+
+    .marca p {
+      margin: 4px 0 0;
+      color: var(--cinza);
+      font-size: 13px;
+    }
+
+    .identificacao {
+      background: #EAF8F1;
+      color: var(--verde);
+      padding: 9px 16px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    main {
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 50px 30px 70px;
+    }
+
+    .subtitulo {
+      color: var(--verde);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .titulo-principal {
+      font-size: clamp(29px, 4vw, 43px);
+      letter-spacing: -1.5px;
+      line-height: 1.2;
+      margin: 12px 0;
+      color: var(--azul);
+    }
+
+    .descricao {
+      color: var(--cinza);
+      font-size: 15px;
+      margin: 0;
+      line-height: 1.7;
+    }
+
+    .ferramentas {
+      margin-top: 38px;
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .campo-busca {
+      width: 390px;
+      max-width: 100%;
+      height: 51px;
+      background: white;
+      border: 1px solid var(--borda);
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      box-shadow: 0 4px 16px rgba(22,44,135,.035);
+    }
+
+    .icone-busca {
+      font-size: 20px;
+      margin-right: 12px;
+      color: var(--cinza);
+    }
+
+    .campo-busca input {
+      border: none;
+      outline: none;
+      background: transparent;
+      flex: 1;
+      min-width: 0;
+      color: var(--texto);
+      font-size: 14px;
+    }
+
+    .quantidade {
+      color: var(--cinza);
+      font-size: 13px;
+    }
+
+    .grade {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      position: relative;
+      background: white;
+      min-height: 180px;
+      padding: 25px;
+      border-radius: 17px;
+      border: 1px solid var(--borda);
+      text-decoration: none;
+      color: var(--texto);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      box-shadow: 0 6px 24px rgba(30,48,92,.045);
+      transition: transform .22s, box-shadow .22s;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      height: 4px;
+      background: var(--verde);
+    }
+
+    .card:nth-child(4n+2)::before {
+      background: var(--azul-claro);
+    }
+
+    .card:nth-child(4n+3)::before {
+      background: var(--amarelo);
+    }
+
+    .card:nth-child(4n+4)::before {
+      background: var(--azul);
+    }
+
+    .card:hover,
+    .card:focus-visible {
+      transform: translateY(-5px);
+      border-color: #C9D5E7;
+      box-shadow: 0 16px 35px rgba(30,48,92,.12);
+      outline: none;
+    }
+
+    .card-topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .icone-app {
+      height: 48px;
+      width: 48px;
+      border-radius: 13px;
+      background: #EDF2FF;
+      color: var(--azul);
+      font-weight: 800;
+      font-size: 21px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .seta {
+      font-size: 25px;
+      color: var(--verde);
+      font-weight: 400;
+    }
+
+    .nome-app {
+      font-size: 18px;
+      font-weight: 750;
+      margin-top: 20px;
+      overflow-wrap: anywhere;
+    }
+
+    .abrir {
+      font-size: 12px;
+      margin-top: 6px;
+      color: var(--cinza);
+    }
+
+    .estado {
+      grid-column: 1 / -1;
+      padding: 60px 20px;
+      text-align: center;
+      border-radius: 15px;
+      background: white;
+      border: 1px dashed #CDD6E5;
+      color: var(--cinza);
+      line-height: 1.7;
+    }
+
+    .estado button {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: var(--azul);
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    footer {
+      padding: 26px 20px;
+      text-align: center;
+      color: #8995A7;
+      font-size: 12px;
+      border-top: 1px solid var(--borda);
+    }
+
+    @media(max-width: 850px) {
+      .grade {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media(max-width: 550px) {
+      .header-interno {
+        padding: 16px 20px;
+      }
+
+      .brasao {
+        width: 53px;
+        height: 61px;
+      }
+
+      .marca {
+        gap: 12px;
+      }
+
+      .marca h1 {
+        font-size: 24px;
+      }
+
+      .identificacao {
+        display: none;
+      }
+
+      main {
+        padding: 35px 20px 55px;
+      }
+
+      .titulo-principal {
+        font-size: 30px;
+      }
+
+      .campo-busca {
+        width: 100%;
+      }
+
+      .grade {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .card {
+        min-height: 150px;
+      }
+    }
+
+    @media(prefers-reduced-motion: reduce) {
+      .card {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="barra-cores"></div>
+
+  <header>
+    <div class="header-interno">
+
+      <div class="marca">
+
+        <img
+          src="brasao-sao-luis.png"
+          class="brasao"
+          alt="Brasão NPOR"
+        >
+
+        <div>
+          <h1>NPOR</h1>
+          <p>Central de Aplicativos</p>
+        </div>
+
+      </div>
+
+      <span class="identificacao">
+        Portal Integrado
+      </span>
+
+    </div>
+  </header>
+
+  <main>
+
+    <div class="subtitulo">
+      Seu espaço digital
+    </div>
+
+    <h2 class="titulo-principal">
+      Tudo o que você precisa,<br>
+      em um só lugar.
+    </h2>
+
+    <p class="descricao">
+      Acesse seus sistemas e ferramentas de forma
+      simples, rápida e organizada.
+    </p>
+
+    <div class="ferramentas">
+
+      <label class="campo-busca">
+        <span class="icone-busca" aria-hidden="true">
+          &#9906;
+        </span>
+
+        <input
+          type="search"
+          id="pesquisa"
+          placeholder="Buscar aplicativo..."
+          aria-label="Buscar aplicativo"
+          oninput="filtrarApps()"
+        >
+      </label>
+
+      <div class="quantidade" id="contador">
+        Carregando aplicativos...
+      </div>
+
+    </div>
+
+    <section
+      class="grade"
+      id="gradeApps"
+      aria-live="polite"
+    >
+      <div class="estado">
+        Carregando os aplicativos do NPOR...
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    NPOR &bull; Central de Aplicativos
+  </footer>
+
+  <script>
+
+    // API PUBLICADA NO GOOGLE APPS SCRIPT
+    const API_URL =
+      'https://script.google.com/macros/s/AKfycbyz7vdrGivIgqY0UJ5zFRfYBlG48GxjM31-2ZjL6WjXMifVAkvbWcexIlYwInuY7skIZg/exec';
+
+    let aplicativos = [];
+    let temporizador;
+    let carregamentoFinalizado = false;
+
+    const grade = document.getElementById('gradeApps');
+    const contador = document.getElementById('contador');
+    const pesquisa = document.getElementById('pesquisa');
+
+    function mostrarEstado(mensagem, permitirTentar = false) {
+      grade.replaceChildren();
+
+      const estado = document.createElement('div');
+      estado.className = 'estado';
+      estado.textContent = mensagem;
+
+      if (permitirTentar) {
+        const botao = document.createElement('button');
+        botao.textContent = 'Tentar novamente';
+        botao.onclick = carregarApps;
+        estado.append(document.createElement('br'), botao);
+      }
+
+      grade.appendChild(estado);
+    }
+
+    function carregarApps() {
+      carregamentoFinalizado = false;
+      contador.textContent = 'Carregando...';
+      mostrarEstado('Buscando aplicativos na planilha...');
+
+      // Remove qualquer consulta anterior
+      const anterior = document.getElementById('apiNPOR');
+      if (anterior) anterior.remove();
+
+      clearTimeout(temporizador);
+
+      // O Apps Script utiliza este callback fixo
+      const script = document.createElement('script');
+      script.id = 'apiNPOR';
+      script.src = API_URL;
+
+      script.onerror = function() {
+        if (!carregamentoFinalizado) {
+          finalizarErro('Não foi possível conectar ao Google Apps Script.');
+        }
+      };
+
+      document.body.appendChild(script);
+
+      temporizador = setTimeout(function() {
+        if (!carregamentoFinalizado) {
+          finalizarErro('A consulta demorou mais que o esperado.');
+        }
+      }, 20000);
+    }
+
+    function finalizarErro(mensagem) {
+      carregamentoFinalizado = true;
+      clearTimeout(temporizador);
+      contador.textContent = 'Conexão indisponível';
+      mostrarEstado(mensagem, true);
+    }
+
+    // Função chamada pela API do Google Apps Script
+    window.NPOR_RECEBER_APPS = function(resposta) {
+      carregamentoFinalizado = true;
+      clearTimeout(temporizador);
+
+      if (!resposta || !resposta.sucesso) {
+        finalizarErro(
+          resposta && resposta.mensagem
+            ? resposta.mensagem
+            : 'Não foi possível obter os aplicativos.'
+        );
+        return;
+      }
+
+      aplicativos = Array.isArray(resposta.apps)
+        ? resposta.apps
+        : [];
+
+      filtrarApps();
+    };
+
+    function filtrarApps() {
+      const termo = pesquisa.value
+        .trim()
+        .toLocaleLowerCase('pt-BR');
+
+      const filtrados = aplicativos.filter(app => {
+        return String(app.nome || '')
+          .toLocaleLowerCase('pt-BR')
+          .includes(termo);
+      });
+
+      contador.textContent =
+        filtrados.length +
+        (filtrados.length === 1
+          ? ' aplicativo disponível'
+          : ' aplicativos disponíveis');
+
+      grade.replaceChildren();
+
+      if (filtrados.length === 0) {
+        mostrarEstado(
+          termo
+            ? 'Nenhum aplicativo encontrado para essa pesquisa.'
+            : 'Nenhum aplicativo cadastrado na planilha.'
+        );
+        return;
+      }
+
+      filtrados.forEach(function(app) {
+
+        if (
+          !app.nome ||
+          !/^https:\/\/[^\s]+$/i.test(app.link)
+        ) {
+          return;
+        }
+
+        const card = document.createElement('a');
+        card.className = 'card';
+        card.href = app.link;
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+
+        const topo = document.createElement('div');
+        topo.className = 'card-topo';
+
+        const icone = document.createElement('div');
+        icone.className = 'icone-app';
+        icone.textContent = app.nome
+          .charAt(0)
+          .toLocaleUpperCase('pt-BR');
+
+        const seta = document.createElement('span');
+        seta.className = 'seta';
+        seta.textContent = '↗';
+
+        topo.append(icone, seta);
+
+        const corpo = document.createElement('div');
+
+        const nome = document.createElement('div');
+        nome.className = 'nome-app';
+        nome.textContent = app.nome;
+
+        const abrir = document.createElement('div');
+        abrir.className = 'abrir';
+        abrir.textContent = 'Abrir aplicativo';
+
+        corpo.append(nome, abrir);
+        card.append(topo, corpo);
+        grade.appendChild(card);
+
+      });
+    }
+
+    // Consulta inicial
+    carregarApps();
+
+  </script>
+
+</body>
+</html>
