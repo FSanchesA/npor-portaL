@@ -5,7 +5,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#162C87">
+
   <title>NPOR | Central de Aplicativos</title>
+
+  <!-- ÍCONE ORIGINAL DO BRASÃO -->
+  <link rel="icon" type="image/png" href="./brasao-sao-luis.png">
+  <link rel="apple-touch-icon" href="./brasao-sao-luis.png">
+
+  <!-- CONFIGURAÇÃO PARA IPHONE -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="NPOR">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
 
   <style>
     :root {
@@ -359,7 +370,7 @@
       <div class="marca">
 
         <img
-          src="brasao-sao-luis.png"
+          src="./brasao-sao-luis.png"
           class="brasao"
           alt="Brasão NPOR"
         >
@@ -434,7 +445,7 @@
 
   <script>
 
-    // API PUBLICADA NO GOOGLE APPS SCRIPT
+    // API DO GOOGLE APPS SCRIPT
     const API_URL =
       'https://script.google.com/macros/s/AKfycbyz7vdrGivIgqY0UJ5zFRfYBlG48GxjM31-2ZjL6WjXMifVAkvbWcexIlYwInuY7skIZg/exec';
 
@@ -468,20 +479,20 @@
       contador.textContent = 'Carregando...';
       mostrarEstado('Buscando aplicativos na planilha...');
 
-      // Remove qualquer consulta anterior
       const anterior = document.getElementById('apiNPOR');
       if (anterior) anterior.remove();
 
       clearTimeout(temporizador);
 
-      // O Apps Script utiliza este callback fixo
       const script = document.createElement('script');
       script.id = 'apiNPOR';
       script.src = API_URL;
 
       script.onerror = function() {
         if (!carregamentoFinalizado) {
-          finalizarErro('Não foi possível conectar ao Google Apps Script.');
+          finalizarErro(
+            'Não foi possível conectar ao Google Apps Script.'
+          );
         }
       };
 
@@ -489,7 +500,9 @@
 
       temporizador = setTimeout(function() {
         if (!carregamentoFinalizado) {
-          finalizarErro('A consulta demorou mais que o esperado.');
+          finalizarErro(
+            'A consulta demorou mais que o esperado.'
+          );
         }
       }, 20000);
     }
@@ -501,7 +514,7 @@
       mostrarEstado(mensagem, true);
     }
 
-    // Função chamada pela API do Google Apps Script
+    // RECEBE OS APLICATIVOS DO GOOGLE SHEETS
     window.NPOR_RECEBER_APPS = function(resposta) {
       carregamentoFinalizado = true;
       clearTimeout(temporizador);
@@ -597,7 +610,7 @@
       });
     }
 
-    // Consulta inicial
+    // CARREGAMENTO AUTOMÁTICO
     carregarApps();
 
   </script>
