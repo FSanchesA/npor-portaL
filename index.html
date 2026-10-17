@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#162C87">
 
-  <title>NPOR | Central de Aplicativos</title>
+  <title>NPOR | Núcleo de Preparação de Oficiais da Reserva</title>
 
   <!-- BRASÃO E ÍCONE DO IPHONE -->
   <link rel="icon" type="image/png" href="./brasao-sao-luis.png">
@@ -139,35 +139,6 @@
       align-items: center;
       gap: 20px;
       flex-wrap: wrap;
-    }
-
-    .campo-busca {
-      width: 390px;
-      max-width: 100%;
-      height: 51px;
-      background: white;
-      border: 1px solid var(--borda);
-      border-radius: 13px;
-      display: flex;
-      align-items: center;
-      padding: 0 18px;
-      box-shadow: 0 4px 16px rgba(22,44,135,.035);
-    }
-
-    .icone-busca {
-      font-size: 21px;
-      margin-right: 12px;
-      color: var(--cinza);
-    }
-
-    .campo-busca input {
-      border: none;
-      outline: none;
-      background: transparent;
-      flex: 1;
-      min-width: 0;
-      color: var(--texto);
-      font-size: 14px;
     }
 
     .quantidade {
@@ -321,10 +292,6 @@
         font-size: 30px;
       }
 
-      .campo-busca {
-        width: 100%;
-      }
-
       .grade {
         grid-template-columns: 1fr;
         gap: 14px;
@@ -360,7 +327,7 @@
 
         <div>
           <h1>NPOR</h1>
-          <p>Central de Aplicativos</p>
+          <p>Núcleo de Prepração de Oficiais da Reserva</p>
         </div>
 
       </div>
@@ -375,33 +342,20 @@
   <main>
 
     <div class="subtitulo">
-      Seu espaço digital
+      Central de aplicativos do Núcleo.
     </div>
 
     <h2 class="titulo-principal">
-      Tudo o que você precisa,<br>
-      em um só lugar.
+      Central integrada de Gestão e ,<br>
+    Ensino Militar.
     </h2>
 
     <p class="descricao">
-      Acesse seus sistemas e ferramentas de forma
-      simples, rápida e organizada.
+      Tecnologia, organização e eficiência a 
+      serviço da formação dos futuros oficiais.
     </p>
 
     <div class="ferramentas">
-
-      <label class="campo-busca">
-        <span class="icone-busca" aria-hidden="true">
-          &#9906;
-        </span>
-
-        <input
-          type="search"
-          id="pesquisa"
-          placeholder="Buscar aplicativo..."
-          aria-label="Buscar aplicativo"
-        >
-      </label>
 
       <div class="quantidade" id="contador"></div>
 
@@ -460,9 +414,6 @@
 
     const contador =
       document.getElementById('contador');
-
-    const pesquisa =
-      document.getElementById('pesquisa');
 
     let aplicativos = [];
     let temporizador = null;
@@ -527,22 +478,12 @@
 
     function renderizarApps() {
 
-      const termo = pesquisa.value
-        .trim()
-        .toLocaleLowerCase('pt-BR');
-
       /*
          Não utilizamos ordenação alfabética.
          A ordem recebida do Sheets é preservada.
       */
 
-      const filtrados = aplicativos.filter(app => {
-
-        return String(app.nome || '')
-          .toLocaleLowerCase('pt-BR')
-          .includes(termo);
-
-      });
+      const filtrados = aplicativos;
 
       contador.textContent =
         filtrados.length +
@@ -558,9 +499,7 @@
 
         mensagem.className = 'estado';
 
-        mensagem.textContent = termo
-          ? 'Nenhum aplicativo encontrado.'
-          : 'Nenhum aplicativo cadastrado.';
+        mensagem.textContent = 'Nenhum aplicativo cadastrado.';
 
         grade.appendChild(mensagem);
 
@@ -775,15 +714,6 @@
       document.body.appendChild(script);
 
     }
-
-    /* =========================================
-       PESQUISA
-    ========================================= */
-
-    pesquisa.addEventListener(
-      'input',
-      renderizarApps
-    );
 
     /* =========================================
        ATUALIZAR QUANDO VOLTAR AO APP
