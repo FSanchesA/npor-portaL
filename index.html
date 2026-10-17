@@ -8,11 +8,11 @@
 
   <title>NPOR | Central de Aplicativos</title>
 
-  <!-- ÍCONE ORIGINAL DO BRASÃO -->
+  <!-- ÍCONE ORIGINAL DO NPOR -->
   <link rel="icon" type="image/png" href="./brasao-sao-luis.png">
   <link rel="apple-touch-icon" href="./brasao-sao-luis.png">
 
-  <!-- CONFIGURAÇÃO PARA IPHONE -->
+  <!-- CONFIGURAÇÃO IPHONE -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="NPOR">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -408,6 +408,7 @@
     <div class="ferramentas">
 
       <label class="campo-busca">
+
         <span class="icone-busca" aria-hidden="true">
           &#9906;
         </span>
@@ -417,13 +418,11 @@
           id="pesquisa"
           placeholder="Buscar aplicativo..."
           aria-label="Buscar aplicativo"
-          oninput="filtrarApps()"
         >
+
       </label>
 
-      <div class="quantidade" id="contador">
-        Carregando aplicativos...
-      </div>
+      <div class="quantidade" id="contador"></div>
 
     </div>
 
@@ -431,11 +430,7 @@
       class="grade"
       id="gradeApps"
       aria-live="polite"
-    >
-      <div class="estado">
-        Carregando os aplicativos do NPOR...
-      </div>
-    </section>
+    ></section>
 
   </main>
 
@@ -445,17 +440,66 @@
 
   <script>
 
-    // API DO GOOGLE APPS SCRIPT
+    /* =====================================
+       NPOR - CENTRAL DE APLICATIVOS
+       CACHE LOCAL + SINCRONIZAÇÃO SILENCIOSA
+    ===================================== */
+
     const API_URL =
       'https://script.google.com/macros/s/AKfycbyz7vdrGivIgqY0UJ5zFRfYBlG48GxjM31-2ZjL6WjXMifVAkvbWcexIlYwInuY7skIZg/exec';
 
+    const CACHE_KEY = 'NPOR_APLICATIVOS_V2';
+
     let aplicativos = [];
     let temporizador;
+    let requisicaoAtual = 0;
     let carregamentoFinalizado = false;
+    let possuiCache = false;
 
     const grade = document.getElementById('gradeApps');
     const contador = document.getElementById('contador');
     const pesquisa = document.getElementById('pesquisa');
+
+    /* =====================================
+       LER CACHE DO DISPOSITIVO
+    ===================================== */
+
+    function lerCache() {
+      try {
+        const salvo = localStorage.getItem(CACHE_KEY);
+
+        if (salvo !== null) {
+          const dados = JSON.parse(salvo);
+
+          if (Array.isArray(dados)) {
+            aplicativos = dados;
+            possuiCache = true;
+          }
+        }
+
+      } catch (erro) {
+        console.warn('Cache não disponível:', erro);
+      }
+    }
+
+    /* =====================================
+       SALVAR CACHE
+    ===================================== */
+
+    function salvarCache() {
+      try {
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify(aplicativos)
+        );
+      } catch (erro) {
+        console.warn('Falha ao salvar cache:', erro);
+      }
+    }
+
+    /* =====================================
+       ESTADO DA INTERFACE
+    ===================================== */
 
     function mostrarEstado(mensagem, permitirTentar = false) {
       grade.replaceChildren();
@@ -468,83 +512,31 @@
         const botao = document.createElement('button');
         botao.textContent = 'Tentar novamente';
         botao.onclick = carregarApps;
-        estado.append(document.createElement('br'), botao);
+
+        estado.append(
+          document.createElement('br'),
+          botao
+        );
       }
 
       grade.appendChild(estado);
     }
 
-    function carregarApps() {
-      carregamentoFinalizado = false;
-      contador.textContent = 'Carregando...';
-      mostrarEstado('Buscando aplicativos na planilha...');
-
-      const anterior = document.getElementById('apiNPOR');
-      if (anterior) anterior.remove();
-
-      clearTimeout(temporizador);
-
-      const script = document.createElement('script');
-      script.id = 'apiNPOR';
-      script.src = API_URL;
-
-      script.onerror = function() {
-        if (!carregamentoFinalizado) {
-          finalizarErro(
-            'Não foi possível conectar ao Google Apps Script.'
-          );
-        }
-      };
-
-      document.body.appendChild(script);
-
-      temporizador = setTimeout(function() {
-        if (!carregamentoFinalizado) {
-          finalizarErro(
-            'A consulta demorou mais que o esperado.'
-          );
-        }
-      }, 20000);
-    }
-
-    function finalizarErro(mensagem) {
-      carregamentoFinalizado = true;
-      clearTimeout(temporizador);
-      contador.textContent = 'Conexão indisponível';
-      mostrarEstado(mensagem, true);
-    }
-
-    // RECEBE OS APLICATIVOS DO GOOGLE SHEETS
-    window.NPOR_RECEBER_APPS = function(resposta) {
-      carregamentoFinalizado = true;
-      clearTimeout(temporizador);
-
-      if (!resposta || !resposta.sucesso) {
-        finalizarErro(
-          resposta && resposta.mensagem
-            ? resposta.mensagem
-            : 'Não foi possível obter os aplicativos.'
-        );
-        return;
-      }
-
-      aplicativos = Array.isArray(resposta.apps)
-        ? resposta.apps
-        : [];
-
-      filtrarApps();
-    };
+    /* =====================================
+       RENDERIZAR APLICATIVOS
+    ===================================== */
 
     function filtrarApps() {
+
       const termo = pesquisa.value
         .trim()
         .toLocaleLowerCase('pt-BR');
 
-      const filtrados = aplicativos.filter(app => {
-        return String(app.nome || '')
+      const filtrados = aplicativos.filter(app =>
+        String(app.nome || '')
           .toLocaleLowerCase('pt-BR')
-          .includes(termo);
-      });
+          .includes(termo)
+      );
 
       contador.textContent =
         filtrados.length +
@@ -555,11 +547,13 @@
       grade.replaceChildren();
 
       if (filtrados.length === 0) {
+
         mostrarEstado(
           termo
             ? 'Nenhum aplicativo encontrado para essa pesquisa.'
             : 'Nenhum aplicativo cadastrado na planilha.'
         );
+
         return;
       }
 
@@ -583,6 +577,7 @@
 
         const icone = document.createElement('div');
         icone.className = 'icone-app';
+
         icone.textContent = app.nome
           .charAt(0)
           .toLocaleUpperCase('pt-BR');
@@ -590,6 +585,8 @@
         const seta = document.createElement('span');
         seta.className = 'seta';
         seta.textContent = '↗';
+
+        seta.setAttribute('aria-hidden', 'true');
 
         topo.append(icone, seta);
 
@@ -605,12 +602,154 @@
 
         corpo.append(nome, abrir);
         card.append(topo, corpo);
-        grade.appendChild(card);
 
+        grade.appendChild(card);
       });
     }
 
-    // CARREGAMENTO AUTOMÁTICO
+    /* =====================================
+       ATUALIZAÇÃO SILENCIOSA
+    ===================================== */
+
+    function carregarApps() {
+
+      requisicaoAtual++;
+      const idRequisicao = requisicaoAtual;
+
+      carregamentoFinalizado = false;
+
+      const anterior =
+        document.getElementById('apiNPOR');
+
+      if (anterior) anterior.remove();
+
+      clearTimeout(temporizador);
+
+      // Se já existe cache, os botões
+      // continuam visíveis durante a consulta.
+
+      if (!possuiCache) {
+        contador.textContent = '';
+        mostrarEstado(
+          'Carregando aplicativos pela primeira vez...'
+        );
+      }
+
+      const script = document.createElement('script');
+
+      script.id = 'apiNPOR';
+
+      script.src =
+        API_URL +
+        '?atualizacao=' +
+        Date.now();
+
+      script.onerror = function() {
+        if (
+          idRequisicao === requisicaoAtual &&
+          !carregamentoFinalizado
+        ) {
+          finalizarErro(
+            'Não foi possível conectar ao Google Apps Script.'
+          );
+        }
+      };
+
+      document.body.appendChild(script);
+
+      temporizador = setTimeout(function() {
+
+        if (
+          idRequisicao === requisicaoAtual &&
+          !carregamentoFinalizado
+        ) {
+          finalizarErro(
+            'A consulta demorou mais que o esperado.'
+          );
+        }
+
+      }, 20000);
+    }
+
+    /* =====================================
+       TRATAMENTO DE ERROS
+    ===================================== */
+
+    function finalizarErro(mensagem) {
+
+      carregamentoFinalizado = true;
+      clearTimeout(temporizador);
+
+      // Com cache, mantém os aplicativos
+      // disponíveis sem interromper o usuário.
+
+      if (possuiCache) {
+        console.warn('NPOR:', mensagem);
+        return;
+      }
+
+      contador.textContent = 'Conexão indisponível';
+      mostrarEstado(mensagem, true);
+    }
+
+    /* =====================================
+       RETORNO DO GOOGLE APPS SCRIPT
+    ===================================== */
+
+    window.NPOR_RECEBER_APPS = function(resposta) {
+
+      carregamentoFinalizado = true;
+      clearTimeout(temporizador);
+
+      if (!resposta || !resposta.sucesso) {
+
+        finalizarErro(
+          resposta && resposta.mensagem
+            ? resposta.mensagem
+            : 'Não foi possível obter os aplicativos.'
+        );
+
+        return;
+      }
+
+      // Recebe os dados atuais da planilha.
+      aplicativos = Array.isArray(resposta.apps)
+        ? resposta.apps
+        : [];
+
+      // Guarda os aplicativos no dispositivo.
+      salvarCache();
+
+      possuiCache = true;
+
+      // Atualiza a interface sem recarregar a página.
+      filtrarApps();
+    };
+
+    /* =====================================
+       PESQUISA INSTANTÂNEA
+    ===================================== */
+
+    pesquisa.addEventListener(
+      'input',
+      filtrarApps
+    );
+
+    /* =====================================
+       INICIALIZAÇÃO DO PORTAL
+    ===================================== */
+
+    // 1. Lê os aplicativos armazenados.
+    lerCache();
+
+    // 2. Exibe imediatamente os botões
+    //    quando já existe cache.
+    if (possuiCache) {
+      filtrarApps();
+    }
+
+    // 3. Consulta o Google Sheets
+    //    em segundo plano.
     carregarApps();
 
   </script>
