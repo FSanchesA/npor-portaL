@@ -8,15 +8,13 @@
 
   <title>NPOR | Central de Aplicativos</title>
 
-  <!-- ÍCONE ORIGINAL DO NPOR -->
+  <!-- BRASÃO E ÍCONE DO IPHONE -->
   <link rel="icon" type="image/png" href="./brasao-sao-luis.png">
   <link rel="apple-touch-icon" href="./brasao-sao-luis.png">
 
-  <!-- CONFIGURAÇÃO IPHONE -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="NPOR">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="mobile-web-app-capable" content="yes">
 
   <style>
     :root {
@@ -47,13 +45,10 @@
       height: 6px;
       background: linear-gradient(
         90deg,
-        var(--verde) 0%,
-        var(--verde) 27%,
-        var(--amarelo) 27%,
-        var(--amarelo) 48%,
-        var(--azul) 48%,
-        var(--azul) 79%,
-        var(--vermelho) 79%
+        var(--verde) 0 27%,
+        var(--amarelo) 27% 48%,
+        var(--azul) 48% 79%,
+        var(--vermelho) 79% 100%
       );
     }
 
@@ -160,7 +155,7 @@
     }
 
     .icone-busca {
-      font-size: 20px;
+      font-size: 21px;
       margin-right: 12px;
       color: var(--cinza);
     }
@@ -200,7 +195,9 @@
       justify-content: space-between;
       overflow: hidden;
       box-shadow: 0 6px 24px rgba(30,48,92,.045);
-      transition: transform .22s, box-shadow .22s;
+      transition:
+        transform .22s,
+        box-shadow .22s;
     }
 
     .card::before {
@@ -255,7 +252,6 @@
     .seta {
       font-size: 25px;
       color: var(--verde);
-      font-weight: 400;
     }
 
     .nome-app {
@@ -272,26 +268,13 @@
     }
 
     .estado {
-      grid-column: 1 / -1;
-      padding: 60px 20px;
+      grid-column: 1/-1;
+      padding: 50px 20px;
       text-align: center;
-      border-radius: 15px;
       background: white;
       border: 1px dashed #CDD6E5;
+      border-radius: 15px;
       color: var(--cinza);
-      line-height: 1.7;
-    }
-
-    .estado button {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 10px 20px;
-      background: var(--azul);
-      border: 0;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-      font-weight: 600;
     }
 
     footer {
@@ -408,7 +391,6 @@
     <div class="ferramentas">
 
       <label class="campo-busca">
-
         <span class="icone-busca" aria-hidden="true">
           &#9906;
         </span>
@@ -419,7 +401,6 @@
           placeholder="Buscar aplicativo..."
           aria-label="Buscar aplicativo"
         >
-
       </label>
 
       <div class="quantidade" id="contador"></div>
@@ -440,103 +421,128 @@
 
   <script>
 
-    /* =====================================
+    /* =========================================
        NPOR - CENTRAL DE APLICATIVOS
-       CACHE LOCAL + SINCRONIZAÇÃO SILENCIOSA
-    ===================================== */
+       EXIBIÇÃO INSTANTÂNEA
+       SINCRONIZAÇÃO SILENCIOSA
+       ORDEM DEFINIDA PELO GOOGLE SHEETS
+    ========================================= */
 
     const API_URL =
       'https://script.google.com/macros/s/AKfycbyz7vdrGivIgqY0UJ5zFRfYBlG48GxjM31-2ZjL6WjXMifVAkvbWcexIlYwInuY7skIZg/exec';
 
-    const CACHE_KEY = 'NPOR_APLICATIVOS_V2';
+    const CACHE_KEY = 'NPOR_APPS_V3';
+
+    /*
+       LISTA INICIAL PROVISÓRIA
+
+       Usada somente quando o dispositivo
+       ainda não possui dados armazenados.
+
+       Após a primeira sincronização,
+       a planilha passa a definir os aplicativos
+       e sua ordem.
+    */
+
+    const APPS_INICIAIS = [
+      {
+        nome: 'F.O',
+        link: 'https://fsanchesa.github.io/imagem/'
+      },
+      {
+        nome: 'GAMEFICAÇÃO',
+        link: 'https://script.google.com/macros/s/AKfycbxA7elKjTfdrlaEXKbUWiJx1BWKZ69-6XlDJwEArvBQuW5u7hH30aumY1tfuyeHt5e2Gg/exec'
+      }
+    ];
+
+    const grade =
+      document.getElementById('gradeApps');
+
+    const contador =
+      document.getElementById('contador');
+
+    const pesquisa =
+      document.getElementById('pesquisa');
 
     let aplicativos = [];
-    let temporizador;
-    let requisicaoAtual = 0;
-    let carregamentoFinalizado = false;
-    let possuiCache = false;
+    let temporizador = null;
+    let ultimaSincronizacao = 0;
+    let sincronizando = false;
 
-    const grade = document.getElementById('gradeApps');
-    const contador = document.getElementById('contador');
-    const pesquisa = document.getElementById('pesquisa');
+    /* =========================================
+       CARREGAMENTO IMEDIATO DO CACHE
+    ========================================= */
 
-    /* =====================================
-       LER CACHE DO DISPOSITIVO
-    ===================================== */
+    function recuperarAplicativos() {
 
-    function lerCache() {
       try {
-        const salvo = localStorage.getItem(CACHE_KEY);
 
-        if (salvo !== null) {
-          const dados = JSON.parse(salvo);
+        const salvos =
+          localStorage.getItem(CACHE_KEY);
 
-          if (Array.isArray(dados)) {
-            aplicativos = dados;
-            possuiCache = true;
+        if (salvos !== null) {
+
+          const lista = JSON.parse(salvos);
+
+          if (Array.isArray(lista)) {
+            return lista;
           }
+
         }
 
       } catch (erro) {
-        console.warn('Cache não disponível:', erro);
+        console.warn(
+          'Não foi possível recuperar o cache.',
+          erro
+        );
       }
+
+      return APPS_INICIAIS.map(app => ({ ...app }));
     }
 
-    /* =====================================
-       SALVAR CACHE
-    ===================================== */
+    /* =========================================
+       ARMAZENAMENTO LOCAL
+    ========================================= */
 
-    function salvarCache() {
+    function salvarAplicativos() {
+
       try {
+
         localStorage.setItem(
           CACHE_KEY,
           JSON.stringify(aplicativos)
         );
+
       } catch (erro) {
-        console.warn('Falha ao salvar cache:', erro);
-      }
-    }
-
-    /* =====================================
-       ESTADO DA INTERFACE
-    ===================================== */
-
-    function mostrarEstado(mensagem, permitirTentar = false) {
-      grade.replaceChildren();
-
-      const estado = document.createElement('div');
-      estado.className = 'estado';
-      estado.textContent = mensagem;
-
-      if (permitirTentar) {
-        const botao = document.createElement('button');
-        botao.textContent = 'Tentar novamente';
-        botao.onclick = carregarApps;
-
-        estado.append(
-          document.createElement('br'),
-          botao
+        console.warn(
+          'Armazenamento local indisponível.',
+          erro
         );
       }
-
-      grade.appendChild(estado);
     }
 
-    /* =====================================
-       RENDERIZAR APLICATIVOS
-    ===================================== */
+    /* =========================================
+       EXIBIR APLICATIVOS
+    ========================================= */
 
-    function filtrarApps() {
+    function renderizarApps() {
 
       const termo = pesquisa.value
         .trim()
         .toLocaleLowerCase('pt-BR');
 
-      const filtrados = aplicativos.filter(app =>
-        String(app.nome || '')
+      /*
+         Não utilizamos ordenação alfabética.
+         A ordem recebida do Sheets é preservada.
+      */
+
+      const filtrados = aplicativos.filter(app => {
+
+        return String(app.nome || '')
           .toLocaleLowerCase('pt-BR')
-          .includes(termo)
-      );
+          .includes(termo);
+
+      });
 
       contador.textContent =
         filtrados.length +
@@ -548,27 +554,35 @@
 
       if (filtrados.length === 0) {
 
-        mostrarEstado(
-          termo
-            ? 'Nenhum aplicativo encontrado para essa pesquisa.'
-            : 'Nenhum aplicativo cadastrado na planilha.'
-        );
+        const mensagem = document.createElement('div');
+
+        mensagem.className = 'estado';
+
+        mensagem.textContent = termo
+          ? 'Nenhum aplicativo encontrado.'
+          : 'Nenhum aplicativo cadastrado.';
+
+        grade.appendChild(mensagem);
 
         return;
       }
 
       filtrados.forEach(function(app) {
 
+        const nomeApp = String(app.nome || '').trim();
+        const linkApp = String(app.link || '').trim();
+
         if (
-          !app.nome ||
-          !/^https:\/\/[^\s]+$/i.test(app.link)
+          !nomeApp ||
+          !/^https:\/\/[^\s]+$/i.test(linkApp)
         ) {
           return;
         }
 
         const card = document.createElement('a');
+
         card.className = 'card';
-        card.href = app.link;
+        card.href = linkApp;
         card.target = '_blank';
         card.rel = 'noopener noreferrer';
 
@@ -578,14 +592,14 @@
         const icone = document.createElement('div');
         icone.className = 'icone-app';
 
-        icone.textContent = app.nome
+        icone.textContent = nomeApp
           .charAt(0)
           .toLocaleUpperCase('pt-BR');
 
         const seta = document.createElement('span');
+
         seta.className = 'seta';
         seta.textContent = '↗';
-
         seta.setAttribute('aria-hidden', 'true');
 
         topo.append(icone, seta);
@@ -594,163 +608,213 @@
 
         const nome = document.createElement('div');
         nome.className = 'nome-app';
-        nome.textContent = app.nome;
+        nome.textContent = nomeApp;
 
         const abrir = document.createElement('div');
         abrir.className = 'abrir';
         abrir.textContent = 'Abrir aplicativo';
 
         corpo.append(nome, abrir);
+
         card.append(topo, corpo);
 
         grade.appendChild(card);
+
       });
     }
 
-    /* =====================================
-       ATUALIZAÇÃO SILENCIOSA
-    ===================================== */
+    /* =========================================
+       COMPARAR LISTAS
+    ========================================= */
 
-    function carregarApps() {
+    function listasDiferentes(novaLista) {
 
-      requisicaoAtual++;
-      const idRequisicao = requisicaoAtual;
+      return JSON.stringify(aplicativos) !==
+             JSON.stringify(novaLista);
 
-      carregamentoFinalizado = false;
+    }
 
-      const anterior =
-        document.getElementById('apiNPOR');
+    /* =========================================
+       RECEBER GOOGLE SHEETS
+    ========================================= */
 
-      if (anterior) anterior.remove();
+    window.NPOR_RECEBER_APPS = function(resposta) {
 
+      sincronizando = false;
       clearTimeout(temporizador);
 
-      // Se já existe cache, os botões
-      // continuam visíveis durante a consulta.
-
-      if (!possuiCache) {
-        contador.textContent = '';
-        mostrarEstado(
-          'Carregando aplicativos pela primeira vez...'
+      if (
+        !resposta ||
+        resposta.sucesso !== true ||
+        !Array.isArray(resposta.apps)
+      ) {
+        console.warn(
+          'Não foi possível sincronizar os aplicativos.'
         );
+
+        return;
+      }
+
+      /*
+         Valida os aplicativos recebidos,
+         mantendo a ordem original das linhas.
+      */
+
+      const novaLista = resposta.apps
+        .filter(app => {
+
+          if (!app) return false;
+
+          const nome = String(app.nome || '').trim();
+          const link = String(app.link || '').trim();
+
+          return nome &&
+            /^https:\/\/[^\s]+$/i.test(link);
+
+        })
+        .map(app => ({
+          nome: String(app.nome).trim(),
+          link: String(app.link).trim()
+        }));
+
+      /*
+         A planilha é a fonte oficial.
+         Se houver alteração na ordem, nomes,
+         links, inclusão ou exclusão,
+         substituímos a lista inteira.
+      */
+
+      if (listasDiferentes(novaLista)) {
+
+        aplicativos = novaLista;
+
+        salvarAplicativos();
+
+        renderizarApps();
+
+      } else {
+
+        // Mesmo sem mudanças, confirma o cache.
+        salvarAplicativos();
+
+      }
+
+      ultimaSincronizacao = Date.now();
+
+      console.log(
+        'NPOR sincronizado:',
+        novaLista.length,
+        'aplicativos.'
+      );
+
+    };
+
+    /* =========================================
+       SINCRONIZAÇÃO SILENCIOSA
+    ========================================= */
+
+    function sincronizarApps() {
+
+      if (sincronizando) return;
+
+      sincronizando = true;
+
+      const scriptAnterior =
+        document.getElementById('apiNPOR');
+
+      if (scriptAnterior) {
+        scriptAnterior.remove();
       }
 
       const script = document.createElement('script');
 
       script.id = 'apiNPOR';
 
+      /*
+         Evita reutilizar uma resposta antiga.
+         Não altera os dados no Sheets.
+      */
+
+      const separador =
+        API_URL.includes('?') ? '&' : '?';
+
       script.src =
         API_URL +
-        '?atualizacao=' +
+        separador +
+        't=' +
         Date.now();
 
       script.onerror = function() {
-        if (
-          idRequisicao === requisicaoAtual &&
-          !carregamentoFinalizado
-        ) {
-          finalizarErro(
-            'Não foi possível conectar ao Google Apps Script.'
-          );
-        }
-      };
 
-      document.body.appendChild(script);
+        sincronizando = false;
+        clearTimeout(temporizador);
+
+        console.warn(
+          'NPOR: conexão indisponível. Mantendo aplicativos locais.'
+        );
+
+        // Nenhuma mensagem aparece na tela.
+        // Os botões existentes permanecem.
+
+      };
 
       temporizador = setTimeout(function() {
 
-        if (
-          idRequisicao === requisicaoAtual &&
-          !carregamentoFinalizado
-        ) {
-          finalizarErro(
-            'A consulta demorou mais que o esperado.'
+        if (sincronizando) {
+
+          sincronizando = false;
+
+          console.warn(
+            'NPOR: consulta demorou. Mantendo aplicativos locais.'
           );
+
         }
 
       }, 20000);
+
+      document.body.appendChild(script);
+
     }
 
-    /* =====================================
-       TRATAMENTO DE ERROS
-    ===================================== */
-
-    function finalizarErro(mensagem) {
-
-      carregamentoFinalizado = true;
-      clearTimeout(temporizador);
-
-      // Com cache, mantém os aplicativos
-      // disponíveis sem interromper o usuário.
-
-      if (possuiCache) {
-        console.warn('NPOR:', mensagem);
-        return;
-      }
-
-      contador.textContent = 'Conexão indisponível';
-      mostrarEstado(mensagem, true);
-    }
-
-    /* =====================================
-       RETORNO DO GOOGLE APPS SCRIPT
-    ===================================== */
-
-    window.NPOR_RECEBER_APPS = function(resposta) {
-
-      carregamentoFinalizado = true;
-      clearTimeout(temporizador);
-
-      if (!resposta || !resposta.sucesso) {
-
-        finalizarErro(
-          resposta && resposta.mensagem
-            ? resposta.mensagem
-            : 'Não foi possível obter os aplicativos.'
-        );
-
-        return;
-      }
-
-      // Recebe os dados atuais da planilha.
-      aplicativos = Array.isArray(resposta.apps)
-        ? resposta.apps
-        : [];
-
-      // Guarda os aplicativos no dispositivo.
-      salvarCache();
-
-      possuiCache = true;
-
-      // Atualiza a interface sem recarregar a página.
-      filtrarApps();
-    };
-
-    /* =====================================
-       PESQUISA INSTANTÂNEA
-    ===================================== */
+    /* =========================================
+       PESQUISA
+    ========================================= */
 
     pesquisa.addEventListener(
       'input',
-      filtrarApps
+      renderizarApps
     );
 
-    /* =====================================
-       INICIALIZAÇÃO DO PORTAL
-    ===================================== */
+    /* =========================================
+       ATUALIZAR QUANDO VOLTAR AO APP
+    ========================================= */
 
-    // 1. Lê os aplicativos armazenados.
-    lerCache();
+    document.addEventListener(
+      'visibilitychange',
+      function() {
 
-    // 2. Exibe imediatamente os botões
-    //    quando já existe cache.
-    if (possuiCache) {
-      filtrarApps();
-    }
+        if (
+          document.visibilityState === 'visible' &&
+          Date.now() - ultimaSincronizacao > 30000
+        ) {
+          sincronizarApps();
+        }
 
-    // 3. Consulta o Google Sheets
-    //    em segundo plano.
-    carregarApps();
+      }
+    );
+
+    /* =========================================
+       INICIALIZAÇÃO INSTANTÂNEA
+    ========================================= */
+
+    // 1. Recupera o cache, ou usa a lista inicial.
+    aplicativos = recuperarAplicativos();
+
+    // 2. Exibe imediatamente os botões.
+    renderizarApps();
+
+    // 3. Consulta o Sheets silenciosamente.
+    sincronizarApps();
 
   </script>
 
