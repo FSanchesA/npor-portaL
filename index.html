@@ -203,32 +203,24 @@
 
     .card-topo {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
+      justify-content: flex-start;
+      align-items: center;
     }
 
     .icone-app {
-      height: 48px;
-      width: 48px;
+      min-height: 48px;
+      width: auto;
+      max-width: 100%;
+      padding: 10px 15px;
       border-radius: 13px;
       background: #EDF2FF;
       color: var(--azul);
       font-weight: 800;
       font-size: 21px;
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
-    }
-
-    .seta {
-      font-size: 25px;
-      color: var(--verde);
-    }
-
-    .nome-app {
-      font-size: 18px;
-      font-weight: 750;
-      margin-top: 20px;
+      text-align: left;
       overflow-wrap: anywhere;
     }
 
@@ -346,12 +338,12 @@
     </div>
 
     <h2 class="titulo-principal">
-      Central integrada de Gestão e ,<br>
-    Ensino Militar.
+      Central integrada de gestão e<br>
+      ensino militar.
     </h2>
 
     <p class="descricao">
-      Tecnologia, organização e eficiência a 
+      Tecnologia, organização e eficiência a
       serviço da formação dos futuros oficiais.
     </p>
 
@@ -531,29 +523,18 @@
         const icone = document.createElement('div');
         icone.className = 'icone-app';
 
-        icone.textContent = nomeApp
-          .charAt(0)
-          .toLocaleUpperCase('pt-BR');
+        // Nome completo no lugar da letra.
+        icone.textContent = nomeApp;
 
-        const seta = document.createElement('span');
-
-        seta.className = 'seta';
-        seta.textContent = '↗';
-        seta.setAttribute('aria-hidden', 'true');
-
-        topo.append(icone, seta);
+        topo.append(icone);
 
         const corpo = document.createElement('div');
-
-        const nome = document.createElement('div');
-        nome.className = 'nome-app';
-        nome.textContent = nomeApp;
 
         const abrir = document.createElement('div');
         abrir.className = 'abrir';
         abrir.textContent = 'Abrir aplicativo';
 
-        corpo.append(nome, abrir);
+        corpo.append(abrir);
 
         card.append(topo, corpo);
 
